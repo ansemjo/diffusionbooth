@@ -4,8 +4,9 @@
 }
 
 #app {
-  margin: 0 auto;
-  padding: 2rem;
+  width: 100%;
+  height: 100%;
+  padding: 1rem;
   font-weight: normal;
 }
 

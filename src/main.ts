@@ -1,5 +1,5 @@
 // use global CSS base
-import "@/assets/main.css";
+import "./main.css";
 
 // use Bulma CSS for styling
 // https://bulma.io/documentation/

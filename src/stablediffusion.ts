@@ -336,4 +336,16 @@ export const presets = {
     },
   }),
 
+  // heavily caricaturized drawing
+  "Impasto Painting": (data: string) => hallucinate({
+    image: data,
+    prompt: "((impasto)), intricate oil painting, thick textured paint, artistic, old holland classic colors, portrait of a young man, looking to the front",
+    model: "dreamshaper8Pruned.hz5Q.safetensors",
+    control: {
+      depth: { enabled: true, weight: 0.6 },
+      openpose: { enabled: true, weight: 0.5 },
+      softedge: { enabled: true, weight: 0.8 },
+    },
+  }),
+
 }

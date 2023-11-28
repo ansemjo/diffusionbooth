@@ -1,0 +1,15 @@
+:root, .title, .label {
+  background-color: black;
+  color: white !important;
+}
+
+#app {
+  margin: 0 auto;
+  padding: 2rem;
+  font-weight: normal;
+}
+
+body {
+  display: flex;
+  place-items: center;
+}

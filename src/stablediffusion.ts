@@ -157,7 +157,7 @@ export const presets = {
   // TODO: replace "young man" etc. with selected gender / age / etc.
 
   // hallucinate with no style constraints
-  "Freely Hallucinate": (data: string) => hallucinate({
+  "free": (data: string) => hallucinate({
     image: data,
     prompt: "",
     model: "dreamshaper8Pruned.hz5Q.safetensors",
@@ -169,7 +169,7 @@ export const presets = {
   }),
 
   // style of 90s anime
-  "NEOTOKIO": (data: string) => hallucinate({
+  "neotokyo": (data: string) => hallucinate({
     image: data,
     prompt: "neotokio, 90s anime, young man with glasses, looking at the camera, portrait, evening, narrow alley in the background, bright neon signs <lora:NEOTOKIO_V0.01:0.7>",
     model: "dreamshaper8Pruned.hz5Q.safetensors",
@@ -181,7 +181,7 @@ export const presets = {
   }),
 
   // kids' illustrations
-  "Kids' Illustration": (data: string) => hallucinate({
+  "kids": (data: string) => hallucinate({
     image: data,
     prompt: "kids illustration, children's cartoon, happy boy, looking at the camera, kitchen in the background <lora:coolkidsMERGEV25.Qqci:1>",
     model: "dreamshaper8Pruned.hz5Q.safetensors",
@@ -193,7 +193,7 @@ export const presets = {
   }),
 
   // western comics (i.e. superman)
-  "Western Comic": (data: string) => hallucinate({
+  "western": (data: string) => hallucinate({
     image: data,
     prompt: "western comic, portrait, superman, looking to the side, city with skyscrapers in the background",
     model: "westernanidiffusion.EpVW.safetensors",
@@ -205,7 +205,7 @@ export const presets = {
   }),
 
   // heavily stylized illustrations
-  "Gotcha!": (data: string) => hallucinate({
+  "gotcha": (data: string) => hallucinate({
     image: data,
     prompt: "stylized cartoon, illustration, portrait of an animal, looking sideways, forest in the background <lora:gotchaV001.Yu4Z:0.4>",
     model: "dreamshaper8Pruned.hz5Q.safetensors",
@@ -217,7 +217,7 @@ export const presets = {
   }),
 
   // watercolor painting
-  "Watercolor": (data: string) => hallucinate({
+  "watercolor": (data: string) => hallucinate({
     image: data,
     prompt: "watercolor painting, hand-drawn illustration, portrait of a young man, looking sideways, clear white paper background <lora:watercolorv1.7lox:1>",
     model: "dreamshaper8Pruned.hz5Q.safetensors",
@@ -229,7 +229,7 @@ export const presets = {
   }),
 
   // photograph of an astronaut
-  "Astronaut": (data: string) => hallucinate({
+  "astronaut": (data: string) => hallucinate({
     image: data,
     prompt: "portrait of a male NASA astronaut in a spacesuit before rocket launch, space photography in the background, realistic photo, shot on DSLR",
     model: "absolutereality181.n8IR.safetensors",
@@ -241,7 +241,7 @@ export const presets = {
   }),
 
   // marble sculpture in a museum
-  "Marble Sculpture": (data: string) => hallucinate({
+  "marble": (data: string) => hallucinate({
     image: data,
     prompt: "marble sculpture in a museum, bust of a male, greek hills, art gallery in the background, realistic photo",
     model: "absolutereality181.n8IR.safetensors",
@@ -253,7 +253,7 @@ export const presets = {
   }),
 
   // anime movie screencap
-  "Anime": (data: string) => hallucinate({
+  "anime": (data: string) => hallucinate({
     image: data,
     prompt: "anime illustration, movie still, 1boy, smiling and happy, looking sideways, bright sun, summer, small town in the background",
     model: "animepasteldreamSoft.lTTK.safetensors",
@@ -265,7 +265,7 @@ export const presets = {
   }),
 
   // stylized illustration with blocky colors
-  "Retro Stylized": (data: string) => hallucinate({
+  "retro": (data: string) => hallucinate({
     image: data,
     prompt: "stylized retro illustration, low palette, pastel colors, sharp lines, band album cover",
     model: "dreamshaper8Pruned.hz5Q.safetensors",
@@ -277,7 +277,7 @@ export const presets = {
   }),
 
   // rough pencil drawing
-  "Pencil Sketch": (data: string) => hallucinate({
+  "pencil": (data: string) => hallucinate({
     image: data,
     prompt: "very rough sketch, pencil drawing, a young male, black-and white, hand-drawn, scribble",
     model: "dreamshaper8Pruned.hz5Q.safetensors",
@@ -289,7 +289,7 @@ export const presets = {
   }),
 
   // clay or plastic figures
-  "Clay Figure": (data: string) => hallucinate({
+  "clay": (data: string) => hallucinate({
     image: data,
     prompt: "clazy style, claymation, stopmotion, small clay figure of a young male, vibrant colors, fantastic plastic <lora:ClayAnimationRedmond15-ClayAnimation-Clay:1>",
     model: "clazy2600.xYzn.ckpt",
@@ -301,7 +301,7 @@ export const presets = {
   }),
 
   // very colorful vibrant vaporwave illustration
-  "Vaporwave": (data: string) => hallucinate({
+  "vaporwave": (data: string) => hallucinate({
     image: data,
     prompt: "vaporwave, illustration, vibrant colors, neon background, purple, flying hair, smiling young male",
     model: "dreamshaper8Pruned.hz5Q.safetensors",
@@ -313,7 +313,7 @@ export const presets = {
   }),
 
   // futuristic sci-fi scene
-  "Sci-Fi": (data: string) => hallucinate({
+  "scifi": (data: string) => hallucinate({
     image: data,
     prompt: "futuristic sci-fi, neon lights illumination, distant night city in the background",
     model: "dreamshaper8Pruned.hz5Q.safetensors",
@@ -325,7 +325,7 @@ export const presets = {
   }),
 
   // heavily caricaturized drawing
-  "Caricaturized": (data: string) => hallucinate({
+  "caricature": (data: string) => hallucinate({
     image: data,
     prompt: "caricature, hand-drawn illustration, portrait of a young man, looking sideways",
     model: "caricaturizer_pcrc_style.uwgn1lmj.q5b.ckpt",
@@ -337,7 +337,7 @@ export const presets = {
   }),
 
   // heavily caricaturized drawing
-  "Impasto Painting": (data: string) => hallucinate({
+  "impasto": (data: string) => hallucinate({
     image: data,
     prompt: "((impasto)), intricate oil painting, thick textured paint, artistic, old holland classic colors, portrait of a young man, looking to the front",
     model: "dreamshaper8Pruned.hz5Q.safetensors",

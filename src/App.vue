@@ -8,7 +8,7 @@ const camera = document.createElement("video");
 camera.autoplay = true;
 
 // style selection
-let style = ref<HTMLSelectElement>();
+// let style = ref<HTMLSelectElement>();
 
 // capture preview element
 let preview = ref<HTMLImageElement>();
@@ -71,7 +71,8 @@ async function hallucinate() {
   let imgdata = preview.value!.src.substring(22);
 
   let output: string[];
-  let preset = style.value!.value as keyof typeof presets;
+  // let preset = style.value!.value as keyof typeof presets;
+  let preset: keyof typeof presets = style.value;
   if (!Object.keys(presets).includes(preset)) return;
   output = await presets[preset](imgdata);
 
@@ -89,17 +90,36 @@ let gender = ref<typeof genders[number]>("Person");
 const ages = [ "Young", "Middle", "Old" ] as const;
 let age = ref<typeof ages[number]>("Young");
 
+const styles: { [s in keyof typeof presets]: string } = {
+  clay: "Clay Figure",
+  free: "Freely Hallucinate",
+  gotcha: "Gotcha!",
+  impasto: "Impasto Painting",
+  kids: "Kids' Illustration",
+  marble: "Marble Sculpture",
+  pencil: "Pencil Sketch",
+  retro: "Retro Stylized",
+  scifi: "Sci-Fi",
+  western: "Western Comic",
+  anime: "Anime",
+  astronaut: "Astronaut",
+  caricature: "Caricaturized",
+  neotokyo: "NEOTOKIO",
+  vaporwave: "Vaporwave",
+  watercolor: "Watercolor",
+}
+let style = ref<keyof typeof styles>("anime");
+
 
 </script>
 
 <template>
 
+  <GlitchyTitle></GlitchyTitle>
   <div class="tile is-ancestor controls">
 
     <!-- left side: title and capture -->
     <div class="tile is-child">
-
-      <GlitchyTitle></GlitchyTitle>
 
       <div class="field">
         <label class="label">Character Selection</label>
@@ -127,19 +147,8 @@ let age = ref<typeof ages[number]>("Young");
     <!-- right side: hallucinations -->
     <div class="tile is-child">
 
-      <!-- TODO: shutter and magic buttons -->
-      <div class="field">
-        <label class="label">Gender</label>
-        <div class="buttons has-addons">
-          <button class="button is-danger" @click="capture">Shutter</button>
-          <button class="button is-info" @click="hallucinate">Magic 🎉</button>
-          <!-- <button v-for="key in ages" :class="{ 'is-warning': age == key }" class="button is-medium" @click="age = key">{{ key }}</button> -->
-        </div>
-      </div><br>
-
       <!-- style selection -->
-      <!-- TODO: make icon tiles -->
-      <div class="field">
+      <!-- <div class="field">
         <label class="label">Style Preset</label>
         <div class="control">
           <div class="select">
@@ -147,6 +156,15 @@ let age = ref<typeof ages[number]>("Young");
               <option v-for="p in presetOptions">{{ p }}</option>
             </select>
           </div>
+        </div>
+      </div> -->
+
+      <div class="field">
+        <label class="label">Style Selection: {{ styles[style] }}</label>
+        <div class="stylegrid">
+          <figure v-for="(value, key) in styles" class="image is-96x96">
+            <img :class="{ 'selected': style === key }" @click="style = key" :title="value" :src="`/assets/style/${key}.png`">
+          </figure>
         </div>
       </div>
 
@@ -160,18 +178,18 @@ let age = ref<typeof ages[number]>("Young");
 
     <div class="tile is-child is-5 capture">
       <!-- captured image -->
-      <img @click="capture" title="New Capture" src="./assets/transparent.png" ref="preview">
+      <img @click="capture" title="New Capture" src="/assets/transparent.png" ref="preview">
     </div>
 
     <div class="tile is-child is-7 diffusion">
       <!-- hallucinated image -->
       <!-- TODO: disable click when in progress -->
-      <img @click="hallucinate" title="Run Diffusion" src="./assets/transparent.png" ref="diffusion">
+      <img @click="hallucinate" title="Run Diffusion" src="/assets/transparent.png" ref="diffusion">
       <div class="controlnets">
         <!-- three small for controlnet display -->
-        <img src="./assets/controlnet/pose.png"  ref="ctlpose">
-        <img src="./assets/controlnet/depth.png" ref="ctldepth">
-        <img src="./assets/controlnet/edges.png" ref="ctledges">
+        <img src="/assets/controlnet/pose.png"  ref="ctlpose">
+        <img src="/assets/controlnet/depth.png" ref="ctldepth">
+        <img src="/assets/controlnet/edges.png" ref="ctledges">
       </div>
     </div>
 
@@ -221,6 +239,25 @@ let age = ref<typeof ages[number]>("Young");
 .controlnets {
   display: grid;
   grid-template-columns: 1fr;
+}
+
+.stylegrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
+}
+.stylegrid figure {
+  padding: 0.4rem;
+}
+.stylegrid img {
+  /* margin: 0.2rem; */
+  border-radius: 0.7rem;
+  border: solid 0.2rem black;
+  aspect-ratio: 1/1;
+  transition: 0.2s ease;
+}
+.stylegrid img.selected {
+  border-color: white;
+  scale: 1.2;
 }
 
 .controlnets > img {

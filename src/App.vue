@@ -4,12 +4,12 @@ import { presets, type Presets, type Preset } from "@/stablediffusion";
 import { ages, type Ages, genders, type Genders } from "@/characterselection"
 import GlitchyTitle from "@/GlitchyTitle.vue";
 
-// invisible video stream for camera capture
-const camera = document.createElement("video");
-camera.autoplay = true;
+// video stream for camera capture
+let preview = ref<HTMLVideoElement>();
 
 // capture preview element
-let preview = ref<HTMLImageElement>();
+let snapshot = ref<HTMLImageElement>();
+let snapped = ref<boolean>(false);
 
 // generated image element
 let diffusion = ref<HTMLImageElement>();
@@ -32,13 +32,13 @@ onMounted(async () => {
 
   // start the video stream
   let stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-  // let vid = camera.value!;
-  camera.srcObject = stream;
+  stream.getVideoTracks()[0].applyConstraints({ aspectRatio: 1/1 });
+  preview.value!.srcObject = stream;
   // vid.play();
 
   // automatically capture on load
-  camera.addEventListener("canplay", async () => {
-    await capture();
+  preview.value!.addEventListener("canplay", async () => {
+    // await capture();
   }, { once: true });
 
 });
@@ -47,6 +47,7 @@ onMounted(async () => {
 async function capture() {
 
   // get the height from video for square
+  let camera = preview.value!;
   let height = camera.videoHeight;
   let left = (camera.videoWidth - height)/2;
   console.log("Video", camera, "is", camera.videoHeight, camera.videoWidth);
@@ -63,7 +64,8 @@ async function capture() {
   );
 
   // set the preview to canvas contents
-  preview.value!.src = canvas.toDataURL();
+  snapshot.value!.src = canvas.toDataURL();
+  snapped.value = true;
 
 }
 
@@ -71,7 +73,7 @@ async function capture() {
 async function hallucinate() {
 
   // capture is a data-uri, extract the base64 string
-  let imgdata = preview.value!.src.substring(22);
+  let imgdata = snapshot.value!.src.substring(22);
 
   // check if a preset is selected
   if (style.value === undefined) {
@@ -94,11 +96,12 @@ async function hallucinate() {
 
 <template>
 
-  <GlitchyTitle></GlitchyTitle>
   <div class="tile is-ancestor controls">
 
     <!-- left side: title and capture -->
     <div class="tile is-child">
+
+      <GlitchyTitle></GlitchyTitle>
 
       <div class="field">
         <label class="label">Character Selection</label>
@@ -110,11 +113,20 @@ async function hallucinate() {
         </div>
       </div>
 
+      <div class="field">
+        <label class="label">Preview</label>
+        <div class="buttons has-addons">
+          <button class="button is-medium is-warning" @click="capture">Capture</button>
+          <button class="button is-medium is-danger" @click="snapped = false">Reset</button>
+          <button class="button is-medium is-info" @click="hallucinate">Diffusion</button>
+        </div>
+      </div>
+
     </div>
     <!-- / left side -->
 
 
-    <!-- right side: hallucinations -->
+    <!-- right side: style presets -->
     <div class="tile is-child">
 
       <div class="field">
@@ -132,22 +144,27 @@ async function hallucinate() {
   </div>
 
 
-  <div class="tile is-ancestor images">
+  <div class="images">
 
-    <div class="tile is-child is-5 capture">
+    <div class="capture container framed">
+      <!-- preview image from webcam -->
+      <video autoplay="true" ref="preview" :hidden="snapped"></video>
       <!-- captured image -->
-      <img @click="capture" title="New Capture" src="/assets/transparent.png" ref="preview">
+      <img src="/assets/transparent.png" ref="snapshot">
     </div>
 
-    <div class="tile is-child is-7 diffusion">
-      <!-- hallucinated image -->
-      <!-- TODO: disable click when in progress -->
-      <img @click="hallucinate" title="Run Diffusion" src="/assets/transparent.png" ref="diffusion">
+    <div class="diffusion container">
+      <div class="container framed">
+        <!-- hallucinated image -->
+        <img src="/assets/transparent.png" ref="diffusion">
+      </div>
+    </div>
+    <div class="diffusion">
       <div class="controlnets">
         <!-- three small for controlnet display -->
-        <img src="/assets/controlnet/pose.png"  ref="ctlpose">
-        <img src="/assets/controlnet/depth.png" ref="ctldepth">
-        <img src="/assets/controlnet/edges.png" ref="ctledges">
+        <img class="framed" src="/assets/controlnet/pose.png"  ref="ctlpose">
+        <img class="framed" src="/assets/controlnet/depth.png" ref="ctldepth">
+        <img class="framed" src="/assets/controlnet/edges.png" ref="ctledges">
       </div>
     </div>
 
@@ -159,17 +176,32 @@ async function hallucinate() {
 
 .images {
   position: absolute;
-  bottom: 2rem;
+  display: grid;
+  grid-template-columns: 3fr 3fr 1fr;
+  bottom: 1rem;
   width: 100%;
 }
-.images img {
-  height: 512px;
+.images .framed {
   background-color: rgb(104, 104, 104);
   border-radius: 1rem;
   border: solid 0.3rem white;
   aspect-ratio: 1/1;
-  margin: 0 auto;
-  display: block;
+  /* margin: 0 auto; */
+  /* display: block; */
+  overflow: hidden;
+}
+.images .container {
+  height: 512px;
+  width: 512px;
+}
+
+.images video, .images img {
+  height: 100%;
+  object-fit: cover;
+}
+
+.images img {
+  /* display: block; */
   transition: all ease 0.2s;
 }
 
@@ -177,7 +209,7 @@ async function hallucinate() {
   scale: 1.03;
 }
 
-.images .capture img:hover {
+.images .framed img:hover {
   border-color: red;
 }
 

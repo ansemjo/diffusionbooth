@@ -96,14 +96,16 @@ async function hallucinate() {
 
 <template>
 
-  <div class="tile is-ancestor controls">
+  <div id="pageroot">
 
-    <!-- left side: title and capture -->
-    <div class="tile is-child">
-
+    <!-- glitchy title -->
+    <div id="glitchytitle">
       <GlitchyTitle></GlitchyTitle>
+    </div>
 
-      <div class="field">
+    <!-- character selection buttons -->
+    <div id="characterselection">
+      <div class="field"> <!-- character traits -->
         <label class="label">Character Selection</label>
         <div class="buttons has-addons">
           <button v-for="key in ages" :class="{ 'is-success': age == key }" class="button is-medium" @click="age = key">{{ key }}</button>
@@ -112,8 +114,7 @@ async function hallucinate() {
           <button v-for="key in genders" :class="{ 'is-link': gender == key }" class="button is-medium" @click="gender = key">{{ key }}</button>
         </div>
       </div>
-
-      <div class="field">
+      <div class="field"> <!-- TODO: action buttons -->
         <label class="label">Preview</label>
         <div class="buttons has-addons">
           <button class="button is-medium is-warning" @click="capture">Capture</button>
@@ -121,14 +122,10 @@ async function hallucinate() {
           <button class="button is-medium is-info" @click="hallucinate">Diffusion</button>
         </div>
       </div>
-
     </div>
-    <!-- / left side -->
 
-
-    <!-- right side: style presets -->
-    <div class="tile is-child">
-
+    <!-- style presets -->
+    <div id="styleselection">
       <div class="field">
         <label class="label">Style Selection: {{ style !== undefined ? presets[style].label : "NONE" }}</label>
         <div class="stylegrid">
@@ -137,12 +134,9 @@ async function hallucinate() {
           </figure>
         </div>
       </div>
-
     </div>
-    <!-- / right side -->
 
   </div>
-
 
   <div class="images">
 
@@ -173,6 +167,27 @@ async function hallucinate() {
 </template>
 
 <style scoped>
+
+#pageroot {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  grid-template-rows: auto;
+  grid-template-areas:
+    "title     title"
+    "character styles";
+}
+
+#glitchytitle {
+  grid-area: title;
+}
+
+#characterselection {
+  grid-area: character;
+}
+
+#styleselection {
+  grid-area: styles;
+}
 
 .images {
   position: absolute;

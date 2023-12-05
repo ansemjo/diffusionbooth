@@ -1,14 +1,12 @@
 <script setup lang="ts">
 import { ref, onMounted } from "vue";
-import { presets } from "@/stablediffusion";
+import { presets, type Presets, type Preset } from "@/stablediffusion";
+import { ages, type Ages, genders, type Genders } from "@/characterselection"
 import GlitchyTitle from "@/GlitchyTitle.vue";
 
 // invisible video stream for camera capture
 const camera = document.createElement("video");
 camera.autoplay = true;
-
-// style selection
-// let style = ref<HTMLSelectElement>();
 
 // capture preview element
 let preview = ref<HTMLImageElement>();
@@ -20,6 +18,14 @@ let diffusion = ref<HTMLImageElement>();
 let ctlpose = ref<HTMLImageElement>();
 let ctldepth = ref<HTMLImageElement>();
 let ctledges = ref<HTMLImageElement>();
+
+// character selection
+let gender = ref<Genders>(genders[1]);
+let age = ref<Ages>(ages[1]);
+
+// style selection
+const styles = presets;
+let style = ref<Presets>("western");
 
 
 onMounted(async () => {
@@ -61,20 +67,20 @@ async function capture() {
 
 }
 
-// get available preset functions
-const presetOptions = Object.keys(presets);
-
 // send capture to stable-diffusion for transformation
 async function hallucinate() {
 
   // capture is a data-uri, extract the base64 string
   let imgdata = preview.value!.src.substring(22);
 
-  let output: string[];
-  // let preset = style.value!.value as keyof typeof presets;
-  let preset: keyof typeof presets = style.value;
-  if (!Object.keys(presets).includes(preset)) return;
-  output = await presets[preset](imgdata);
+  // check if a preset is selected
+  if (style.value === undefined) {
+    console.error("no style selected");
+    return;
+  }
+
+  // run the diffusion with character arguments
+  let output = await presets[style.value].func(imgdata, gender.value, age.value);
 
   // set generated image and controlnet previews
   diffusion.value!.src = output[0];
@@ -83,33 +89,6 @@ async function hallucinate() {
   ctledges.value!.src = output[3];
 
 }
-
-const genders = [ "Person", "Male", "Female" ] as const;
-let gender = ref<typeof genders[number]>("Person");
-
-const ages = [ "Young", "Middle", "Old" ] as const;
-let age = ref<typeof ages[number]>("Young");
-
-const styles: { [s in keyof typeof presets]: string } = {
-  clay: "Clay Figure",
-  free: "Freely Hallucinate",
-  gotcha: "Gotcha!",
-  impasto: "Impasto Painting",
-  kids: "Kids' Illustration",
-  marble: "Marble Sculpture",
-  pencil: "Pencil Sketch",
-  retro: "Retro Stylized",
-  scifi: "Sci-Fi",
-  western: "Western Comic",
-  anime: "Anime",
-  astronaut: "Astronaut",
-  caricature: "Caricaturized",
-  neotokyo: "NEOTOKIO",
-  vaporwave: "Vaporwave",
-  watercolor: "Watercolor",
-}
-let style = ref<keyof typeof styles>("anime");
-
 
 </script>
 
@@ -131,15 +110,6 @@ let style = ref<keyof typeof styles>("anime");
         </div>
       </div>
 
-      <!-- TODO -->
-      <!-- <div class="field">
-        <label class="label">Expression</label>
-        <div class="buttons has-addons">
-          <button v-for="key in expressions" :class="{ 'is-warning': expression === key }" class="button is-medium" @click="expression = key">{{ key }}</button>
-        </div>
-      </div> -->
-
-
     </div>
     <!-- / left side -->
 
@@ -147,23 +117,11 @@ let style = ref<keyof typeof styles>("anime");
     <!-- right side: hallucinations -->
     <div class="tile is-child">
 
-      <!-- style selection -->
-      <!-- <div class="field">
-        <label class="label">Style Preset</label>
-        <div class="control">
-          <div class="select">
-            <select ref="style">
-              <option v-for="p in presetOptions">{{ p }}</option>
-            </select>
-          </div>
-        </div>
-      </div> -->
-
       <div class="field">
-        <label class="label">Style Selection: {{ styles[style] }}</label>
+        <label class="label">Style Selection: {{ style !== undefined ? presets[style].label : "NONE" }}</label>
         <div class="stylegrid">
           <figure v-for="(value, key) in styles" class="image is-96x96">
-            <img :class="{ 'selected': style === key }" @click="style = key" :title="value" :src="`/assets/style/${key}.png`">
+            <img :class="{ 'selected': style === key }" @click="style = key" :title="value.label" :src="value.icon">
           </figure>
         </div>
       </div>

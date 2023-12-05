@@ -36,6 +36,10 @@ First, some general notes:
 | Watercolor       | https://civitai.com/models/64560/watercolor<br />"watercolor painting" |
 | Stylizard        | https://civitai.com/models/189726/stylizard-3d-stylized-character-prototyping<br />"3D, stylized character", weight 0.7 .. 1.2, CFG 7 .. 12, probably no edges |
 
+You **should enable larger cache** for ControlNet models! Otherwise they need to be reloaded for every API call, which takes unecessarily long time.
+
+* [Go to Settings > ControlNet (left) > increase "Model cache size"](https://github.com/Mikubill/sd-webui-controlnet/issues/429#issuecomment-1449200295)
+
 ## Keywords / Hints
 
 * As much as I'd like to not dip into the whole gender debate ... even a rather clearly male input image can result in feminine looking output if you just use a generic term like "person". So maybe give a choice of "male / female / person"?

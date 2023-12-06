@@ -278,7 +278,7 @@ export const presets = {
 
   caricature: { // heavily caricaturized drawing
     icon: "/assets/style/caricature.png",
-    label: "Caricaturized",
+    label: "Caricature",
     func: (image, gender, age) => dif(image, "caricaturizer_pcrc_style.uwgn1lmj.q5b.ckpt", 0.6, 0.4, 0.1,
       `caricature, hand-drawn illustration, portrait of a ${chars.persons(gender, age)}, looking sideways`),
   } as Preset,

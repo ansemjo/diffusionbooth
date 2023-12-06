@@ -235,14 +235,14 @@ async function poll_progress() {
       <!-- character selection buttons -->
       <div id="characterselection">
         <div class="field"> <!-- character traits -->
-          <label class="label" :class="{ 'has-text-danger': age === undefined || gender === undefined }">
+          <label class="label" :class="{ 'has-text-danger': image !== null && (age === undefined || gender === undefined) }">
             2. Choose your Character
           </label>
           <div class="buttons has-addons">
-            <button v-for="key in ages" :class="{ 'is-success': age == key }" class="button is-medium" @click="select_age(key)">{{ key }}</button>
+            <button v-for="key in ages" :class="{ 'is-info': age == key }" class="button is-medium" @click="select_age(key)">{{ key }}</button>
           </div>
           <div class="buttons has-addons">
-            <button v-for="key in genders" :class="{ 'is-link': gender == key }" class="button is-medium" @click="select_gender(key)">{{ key }}</button>
+            <button v-for="key in genders" :class="{ 'is-info': gender == key }" class="button is-medium" @click="select_gender(key)">{{ key }}</button>
           </div>
         </div>
       </div>
@@ -250,14 +250,14 @@ async function poll_progress() {
       <!-- style presets -->
       <div id="styleselection">
         <div class="field">
-          <label class="label" :class="{ 'has-text-danger': preset === undefined }">
+          <label class="label" :class="{ 'has-text-danger': image !== null && preset === undefined }">
             3. Select Style: {{ preset !== undefined ? presets[preset].label : "NONE" }}
           </label>
           <div id="stylegrid">
-            <figure v-for="(value, key) in presets" class="image container">
-              <img :class="{ 'selected': preset === key }" @click="select_preset(key)" :title="value.label" :src="value.icon">
-              <div class="overlay">
-                <span>clear snapshot</span>
+            <figure v-for="(value, key) in presets" class="image container" :class="{ 'selected': preset === key }">
+              <img @click="select_preset(key)" :title="value.label" :src="value.icon">
+              <div class="overlay" @click="select_preset(key)">
+                <span>{{ value.label }}</span>
               </div>
             </figure>
           </div>
@@ -484,13 +484,22 @@ async function poll_progress() {
   border-radius: 0.7rem;
   border: none;
   aspect-ratio: 1/1;
-  transition: 0.15s ease;
+  transition: 0.2s ease;
 }
 #stylegrid img:hover {
   scale: 1.1;
 }
-#stylegrid img.selected {
-  border: solid 0.4rem greenyellow;
+#stylegrid .selected img {
+  border: solid 0.3rem white;
+}
+#stylegrid figure:not(.selected) {
+  opacity: 0.6;
+}
+#stylegrid figure:hover {
+  opacity: 1.0;
+}
+#stylegrid .selected {
+  transition: 0.2s ease;
   scale: 1.2;
 }
 #stylegrid .overlay {
@@ -498,6 +507,10 @@ async function poll_progress() {
   width: calc(100% - 1rem);
   border-radius: 0.7rem;
   margin: 0.5rem;
+}
+#stylegrid .overlay span {
+  font-size: 1.2rem;
+  cursor: pointer;
 }
 
 </style>

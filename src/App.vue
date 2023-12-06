@@ -9,7 +9,7 @@ let preview = ref<HTMLVideoElement>();
 
 // capture preview element
 let snapshot = ref<HTMLImageElement>();
-let snapped = ref<boolean>(false);
+let image = ref<string | null>(null);
 
 // generated image element
 let diffusion = ref<HTMLImageElement>();
@@ -44,7 +44,7 @@ onMounted(async () => {
 });
 
 // capture a still image from camera feed
-async function capture() {
+async function take_snapshot() {
 
   // get the height from video for square
   let camera = preview.value!;
@@ -65,8 +65,14 @@ async function capture() {
 
   // set the preview to canvas contents
   snapshot.value!.src = canvas.toDataURL();
-  snapped.value = true;
+  image.value = canvas.toDataURL();
 
+}
+
+// reset snapshot and enable live view for capture
+function clear_snapshot() {
+  snapshot.value!.src = "/assets/transparent.png";
+  image.value = null;
 }
 
 // send capture to stable-diffusion for transformation
@@ -119,8 +125,8 @@ async function hallucinate() {
         <div class="field"> <!-- TODO: action buttons -->
           <label class="label">Preview</label>
           <div class="buttons has-addons">
-            <button class="button is-medium is-warning" @click="capture">Capture</button>
-            <button class="button is-medium is-danger" @click="snapped = false">Reset</button>
+            <button class="button is-medium is-warning" @click="take_snapshot">Capture</button>
+            <button class="button is-medium is-danger" @click="image = null">Reset</button>
             <button class="button is-medium is-info" @click="hallucinate">Diffusion</button>
           </div>
         </div>
@@ -142,9 +148,15 @@ async function hallucinate() {
       <div id="cameraimg" class="images">
         <div class="container framed">
           <!-- video stream from webcam -->
-          <video autoplay="true" ref="preview" :hidden="snapped"></video>
+          <video autoplay="true" ref="preview" :hidden="image !== null"></video>
           <!-- captured image -->
           <img src="/assets/transparent.png" ref="snapshot">
+          <div class="overlay do-clear" @click="clear_snapshot" v-if="image !== null">
+            <span>clear snapshot</span>
+          </div>
+          <div class="overlay do-snapshot" @click="take_snapshot" v-if="image === null">
+            <span>take snapshot</span>
+          </div>
         </div>
       </div>
 
@@ -156,9 +168,18 @@ async function hallucinate() {
       <!-- controlnet previews -->
       <div id="controlnets" class="images">
         <!-- three small for controlnet display -->
-        <img class="framed" src="/assets/controlnet/pose.png"  ref="ctlpose"  title="pose detection">
-        <img class="framed" src="/assets/controlnet/depth.png" ref="ctldepth" title="depth map">
-        <img class="framed" src="/assets/controlnet/edges.png" ref="ctledges" title="soft edges">
+        <div class="container framed">
+          <img src="/assets/controlnet/pose.png"  ref="ctlpose">
+          <div class="overlay"><span>pose detection</span></div>
+        </div>
+        <div class="container framed">
+          <img src="/assets/controlnet/depth.png" ref="ctldepth">
+          <div class="overlay"><span>depth map</span></div>
+        </div>
+        <div class="container framed">
+          <img class="framed" src="/assets/controlnet/edges.png" ref="ctledges">
+          <div class="overlay"><span>soft edges</span></div>
+        </div>
       </div>
 
       <!-- diffusion image -->
@@ -166,6 +187,9 @@ async function hallucinate() {
         <div class="container framed">
           <!-- hallucinated image -->
           <img src="/assets/transparent.png" ref="diffusion">
+          <div class="overlay" @click="hallucinate">
+            <span>run diffusion (again)!</span>
+          </div>
         </div>
       </div>
 
@@ -177,6 +201,42 @@ async function hallucinate() {
 </template>
 
 <style scoped>
+
+.overlay {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  width: 100%;
+  opacity: 0.0;
+  transition: .3s ease;
+  background-color: #fff9;
+}
+
+.overlay.do-clear {
+  background-color: hsla(0, 90%, 60%, 0.4);
+}
+.overlay.do-capture {
+  background-color: hsla(220, 90%, 60%, 0.4);
+}
+
+
+.container:hover .overlay {
+  opacity: 1.0;
+}
+
+.overlay > span {
+  color: black;
+  font-size: 2rem;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  cursor: default;
+}
 
 #pageroot {
   display: grid;
@@ -251,7 +311,7 @@ async function hallucinate() {
 .framed {
   background-color: rgb(104, 104, 104);
   border-radius: 1rem;
-  border: solid 0.15rem white;
+  border: solid 0.3rem white;
   overflow: hidden;
   aspect-ratio: 1/1;
 }
@@ -272,11 +332,6 @@ async function hallucinate() {
 .images .framed:hover {
   scale: 1.03;
 }
-
-#cameraimg .framed:hover {
-  border-color: red;
-}
-
 
 #stylegrid {
   display: grid;

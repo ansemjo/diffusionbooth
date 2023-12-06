@@ -254,8 +254,11 @@ async function poll_progress() {
             3. Select Style: {{ preset !== undefined ? presets[preset].label : "NONE" }}
           </label>
           <div id="stylegrid">
-            <figure v-for="(value, key) in presets" class="image">
+            <figure v-for="(value, key) in presets" class="image container">
               <img :class="{ 'selected': preset === key }" @click="select_preset(key)" :title="value.label" :src="value.icon">
+              <div class="overlay">
+                <span>clear snapshot</span>
+              </div>
             </figure>
           </div>
         </div>
@@ -479,7 +482,7 @@ async function poll_progress() {
 }
 #stylegrid img {
   border-radius: 0.7rem;
-  border: solid 0.4rem black;
+  border: none;
   aspect-ratio: 1/1;
   transition: 0.15s ease;
 }
@@ -487,8 +490,14 @@ async function poll_progress() {
   scale: 1.1;
 }
 #stylegrid img.selected {
-  border-color: greenyellow;
+  border: solid 0.4rem greenyellow;
   scale: 1.2;
+}
+#stylegrid .overlay {
+  height: calc(100% - 1rem);
+  width: calc(100% - 1rem);
+  border-radius: 0.7rem;
+  margin: 0.5rem;
 }
 
 </style>

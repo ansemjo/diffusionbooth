@@ -148,7 +148,7 @@ async function hallucinate() {
       <div id="cameraimg" class="images">
         <div class="container framed">
           <!-- video stream from webcam -->
-          <video autoplay="true" ref="preview" :hidden="image !== null"></video>
+          <video autoplay="true" ref="preview"></video>
           <!-- captured image -->
           <img src="/assets/transparent.png" ref="snapshot">
           <div class="overlay do-clear" @click="clear_snapshot" v-if="image !== null">
@@ -202,7 +202,7 @@ async function hallucinate() {
 
 <style scoped>
 
-.overlay {
+.overlay, #cameraimg img {
   position: absolute;
   top: 0;
   bottom: 0;
@@ -210,6 +210,8 @@ async function hallucinate() {
   right: 0;
   height: 100%;
   width: 100%;
+}
+.overlay {
   opacity: 0.0;
   transition: .3s ease;
   background-color: #fff9;

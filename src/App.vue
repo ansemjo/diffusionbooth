@@ -23,28 +23,40 @@ let ctledges = ref<HTMLImageElement>();
 let gender = ref<Genders>(genders[1]);
 let age = ref<Ages>(ages[1]);
 
-// style selection
-const styles = presets;
-let style = ref<Presets>("western");
-
+// style preset selection
+let preset = ref<Presets>("western");
 
 onMounted(async () => {
 
   // start the video stream
   let stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
-  stream.getVideoTracks()[0].applyConstraints({ aspectRatio: 1/1 });
+  stream.getVideoTracks()[0].applyConstraints({ aspectRatio: 1/1 }); // NOP on firefox
   preview.value!.srcObject = stream;
-  // vid.play();
 
   // automatically capture on load
-  preview.value!.addEventListener("canplay", async () => {
-    // await capture();
-  }, { once: true });
+  // preview.value!.addEventListener("canplay", async () => {
+  //   await take_snapshot();
+  // }, { once: true });
 
 });
 
+// whether to begin hallucination automatically
+const autohallucinate = true;
+
 // capture a still image from camera feed
 function take_snapshot() {
+
+  // early-exit, if ref is undefined
+  if (preview.value === undefined || preview.value.paused) {
+    console.error("camera feed not available yet");
+    return;
+  }
+
+  // refuse to update snapshot, if diffusion is running
+  if (diffusion_inflight.value === true) {
+    console.debug("diffusion running, won't capture new image");
+    return;
+  }
 
   // get the height from video for square
   let camera = preview.value!;
@@ -67,6 +79,11 @@ function take_snapshot() {
   snapshot.value!.src = canvas.toDataURL();
   image.value = canvas.toDataURL();
 
+  // automatically start hallucination with current settings on photo
+  if (autohallucinate === true) {
+    hallucinate();
+  }
+
 }
 
 // reset snapshot and enable live view for capture
@@ -74,6 +91,15 @@ function clear_snapshot() {
   snapshot.value!.src = "/assets/transparent.png";
   image.value = null;
 }
+
+// select a style from preview grid
+function select_preset(key: Presets) {
+  preset.value = key;
+  if (autohallucinate === true) {
+    hallucinate();
+  };
+}
+
 
 // is a diffusion currently in-flight?
 const diffusion_inflight = ref<boolean>(false);
@@ -109,13 +135,13 @@ async function hallucinate() {
     let imgdata = image.value!.substring(22);
     
     // check if a preset is selected
-    if (style.value === undefined) {
+    if (preset.value === undefined) {
       console.error("no style selected");
       return;
     }
     
     // run the diffusion with character arguments
-    let output = await presets[style.value].func(imgdata, gender.value, age.value);
+    let output = await presets[preset.value].func(imgdata, gender.value, age.value);
     
     // set generated image and controlnet previews
     diffusion.value!.src = output[0];
@@ -192,10 +218,10 @@ async function poll_progress() {
       <!-- style presets -->
       <div id="styleselection">
         <div class="field">
-          <label class="label">Style Selection: {{ style !== undefined ? presets[style].label : "NONE" }}</label>
+          <label class="label">Style Selection: {{ preset !== undefined ? presets[preset].label : "NONE" }}</label>
           <div id="stylegrid">
-            <figure v-for="(value, key) in styles" class="image">
-              <img :class="{ 'selected': style === key }" @click="style = key" :title="value.label" :src="value.icon">
+            <figure v-for="(value, key) in presets" class="image">
+              <img :class="{ 'selected': preset === key }" @click="select_preset(key)" :title="value.label" :src="value.icon">
             </figure>
           </div>
         </div>
@@ -245,7 +271,7 @@ async function poll_progress() {
         <div class="container framed">
           <!-- hallucinated image -->
           <img src="/assets/transparent.png" ref="diffusion">
-          <div class="overlay" @click="hallucinate">
+          <div class="overlay" @click="hallucinate" v-if="!diffusion_inflight">
             <span>run diffusion (again)!</span>
           </div>
         </div>

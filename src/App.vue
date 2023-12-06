@@ -20,11 +20,11 @@ let ctldepth = ref<HTMLImageElement>();
 let ctledges = ref<HTMLImageElement>();
 
 // character selection
-let gender = ref<Genders>(genders[1]);
-let age = ref<Ages>(ages[1]);
+let gender = ref<Genders>();
+let age = ref<Ages>();
 
 // style preset selection
-let preset = ref<Presets>("western");
+let preset = ref<Presets>();
 
 onMounted(async () => {
 
@@ -41,7 +41,7 @@ onMounted(async () => {
 });
 
 // whether to begin hallucination automatically
-const autohallucinate = true;
+const autohallucinate = false;
 
 // capture a still image from camera feed
 function take_snapshot() {
@@ -80,7 +80,7 @@ function take_snapshot() {
   image.value = canvas.toDataURL();
 
   // automatically start hallucination with current settings on photo
-  if (autohallucinate === true) {
+  if (gender.value !== undefined && age.value !== undefined && preset.value !== undefined) {
     hallucinate();
   }
 
@@ -92,14 +92,31 @@ function clear_snapshot() {
   image.value = null;
 }
 
-// select a style from preview grid
-function select_preset(key: Presets) {
-  preset.value = key;
-  if (autohallucinate === true) {
-    hallucinate();
-  };
+// select a gender via button
+function select_gender(value: Genders) {
+  gender.value = value;
+  hallucinate();
 }
 
+// select an age via button
+function select_age(value: Ages) {
+  age.value = value;
+  hallucinate();
+}
+
+// select a style from preview grid
+function select_preset(value: Presets) {
+  preset.value = value;
+  hallucinate();
+}
+
+// clear all selections and preview image
+function clear_all() {
+  gender.value = undefined;
+  age.value = undefined;
+  preset.value = undefined;
+  clear_snapshot();
+}
 
 // is a diffusion currently in-flight?
 const diffusion_inflight = ref<boolean>(false);
@@ -113,10 +130,11 @@ async function hallucinate() {
     return;
   }
 
-  // take snapshot if none taken
-  if (image.value === null) {
-    take_snapshot();
-  };
+  // don't run if not everything is selected
+  if (gender.value === undefined || age.value === undefined || preset.value === undefined) {
+    console.warn("make a selection!");
+    return;
+  }
 
   // start polling progress
   let poll = { timeout: 0 };
@@ -193,32 +211,42 @@ async function poll_progress() {
     </div>
 
     <div id="leftside">
+
+      <!-- README -->
+      <div id="readme">
+        Bla bla bla, Mr. Freeman.
+      </div>
       
       <!-- character selection buttons -->
       <div id="characterselection">
         <div class="field"> <!-- character traits -->
-          <label class="label">Character Selection</label>
+          <label class="label">2. Choose your Character</label>
           <div class="buttons has-addons">
-            <button v-for="key in ages" :class="{ 'is-success': age == key }" class="button is-medium" @click="age = key">{{ key }}</button>
+            <button v-for="key in ages" :class="{ 'is-success': age == key }" class="button is-medium" @click="select_age(key)">{{ key }}</button>
           </div>
           <div class="buttons has-addons">
-            <button v-for="key in genders" :class="{ 'is-link': gender == key }" class="button is-medium" @click="gender = key">{{ key }}</button>
+            <button v-for="key in genders" :class="{ 'is-link': gender == key }" class="button is-medium" @click="select_gender(key)">{{ key }}</button>
           </div>
         </div>
-        <!-- <div class="field">
-          <label class="label">Preview</label>
+      </div>
+
+      <!-- picture capture controls -->
+      <div id="capturecontrol">
+        <div class="field">
+          <label class="label">1. Capture Snapshot</label>
           <div class="buttons has-addons">
-            <button class="button is-medium is-warning" @click="take_snapshot">Capture</button>
-            <button class="button is-medium is-danger" @click="clear_snapshot">Reset</button>
-            <button class="button is-medium is-info" @click="hallucinate">Diffusion</button>
+            <button class="button is-medium is-success" @click="take_snapshot"  v-if="image === null">Capture!</button>
+            <button class="button is-medium is-warning" @click="clear_snapshot" v-if="image !== null">Retake</button>
+            <!-- <button class="button is-medium is-info" @click="hallucinate">Diffusion</button> -->
+            <button class="button is-medium is-danger" @click="clear_all">Clear All</button>
           </div>
-        </div> -->
+        </div>
       </div>
   
       <!-- style presets -->
       <div id="styleselection">
         <div class="field">
-          <label class="label">Style Selection: {{ preset !== undefined ? presets[preset].label : "NONE" }}</label>
+          <label class="label">3. Select a Style: {{ preset !== undefined ? presets[preset].label : "NONE" }}</label>
           <div id="stylegrid">
             <figure v-for="(value, key) in presets" class="image">
               <img :class="{ 'selected': preset === key }" @click="select_preset(key)" :title="value.label" :src="value.icon">
@@ -341,10 +369,11 @@ async function poll_progress() {
 #leftside {
   grid-area: leftside;
   display: grid;
-  grid-template-columns: 400px auto;
+  grid-template-columns: auto 450px;
   grid-template-areas:
-    "character ."
-    "styles camera";
+    "readme character"
+    "capture styles"
+    "camera  styles";
 }
 
 #rightlane {
@@ -361,6 +390,12 @@ async function poll_progress() {
 
 .label {
   font-size: 1.4rem;
+}
+
+#capturecontrol {
+  grid-area: capture;
+  justify-self: center;
+  align-self: end;
 }
 
 #glitchytitle {
@@ -431,6 +466,7 @@ async function poll_progress() {
 #stylegrid figure {
   width: 120px;
   padding: 0.5rem;
+  cursor: pointer;
 }
 #stylegrid img {
   border-radius: 0.7rem;

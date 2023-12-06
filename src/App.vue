@@ -75,26 +75,41 @@ function clear_snapshot() {
   image.value = null;
 }
 
+// is a diffusion currently in-flight?
+const diffusion_inflight = ref<boolean>(false);
+
 // send capture to stable-diffusion for transformation
 async function hallucinate() {
-
-  // capture is a data-uri, extract the base64 string
-  let imgdata = snapshot.value!.src.substring(22);
-
-  // check if a preset is selected
-  if (style.value === undefined) {
-    console.error("no style selected");
+  if (diffusion_inflight.value) {
+    console.warn("another request is already processing!");
     return;
   }
+  try {
 
-  // run the diffusion with character arguments
-  let output = await presets[style.value].func(imgdata, gender.value, age.value);
+    // mark request in-flight
+    diffusion_inflight.value = true;
 
-  // set generated image and controlnet previews
-  diffusion.value!.src = output[0];
-  ctlpose.value!.src  = output[1];
-  ctldepth.value!.src = output[2];
-  ctledges.value!.src = output[3];
+    // capture is a data-uri, extract the base64 string
+    let imgdata = snapshot.value!.src.substring(22);
+    
+    // check if a preset is selected
+    if (style.value === undefined) {
+      console.error("no style selected");
+      return;
+    }
+    
+    // run the diffusion with character arguments
+    let output = await presets[style.value].func(imgdata, gender.value, age.value);
+    
+    // set generated image and controlnet previews
+    diffusion.value!.src = output[0];
+    ctlpose.value!.src  = output[1];
+    ctldepth.value!.src = output[2];
+    ctledges.value!.src = output[3];
+
+  } finally {
+    diffusion_inflight.value = false;
+  }
 
 }
 
@@ -126,7 +141,7 @@ async function hallucinate() {
           <label class="label">Preview</label>
           <div class="buttons has-addons">
             <button class="button is-medium is-warning" @click="take_snapshot">Capture</button>
-            <button class="button is-medium is-danger" @click="image = null">Reset</button>
+            <button class="button is-medium is-danger" @click="clear_snapshot">Reset</button>
             <button class="button is-medium is-info" @click="hallucinate">Diffusion</button>
           </div>
         </div>

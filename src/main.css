@@ -1,6 +1,7 @@
 :root, .title, .label {
   background-color: black;
   color: white !important;
+  overflow: hidden;
 }
 
 #app {
@@ -13,4 +14,9 @@
 body {
   display: flex;
   place-items: center;
+}
+
+html, body, #app, #pageroot {
+  height: 100%;
+  width: 100%;
 }

@@ -103,64 +103,74 @@ async function hallucinate() {
       <GlitchyTitle></GlitchyTitle>
     </div>
 
-    <!-- character selection buttons -->
-    <div id="characterselection">
-      <div class="field"> <!-- character traits -->
-        <label class="label">Character Selection</label>
-        <div class="buttons has-addons">
-          <button v-for="key in ages" :class="{ 'is-success': age == key }" class="button is-medium" @click="age = key">{{ key }}</button>
+    <div id="leftside">
+      
+      <!-- character selection buttons -->
+      <div id="characterselection">
+        <div class="field"> <!-- character traits -->
+          <label class="label">Character Selection</label>
+          <div class="buttons has-addons">
+            <button v-for="key in ages" :class="{ 'is-success': age == key }" class="button is-medium" @click="age = key">{{ key }}</button>
+          </div>
+          <div class="buttons has-addons">
+            <button v-for="key in genders" :class="{ 'is-link': gender == key }" class="button is-medium" @click="gender = key">{{ key }}</button>
+          </div>
         </div>
-        <div class="buttons has-addons">
-          <button v-for="key in genders" :class="{ 'is-link': gender == key }" class="button is-medium" @click="gender = key">{{ key }}</button>
-        </div>
-      </div>
-      <div class="field"> <!-- TODO: action buttons -->
-        <label class="label">Preview</label>
-        <div class="buttons has-addons">
-          <button class="button is-medium is-warning" @click="capture">Capture</button>
-          <button class="button is-medium is-danger" @click="snapped = false">Reset</button>
-          <button class="button is-medium is-info" @click="hallucinate">Diffusion</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- style presets -->
-    <div id="styleselection">
-      <div class="field">
-        <label class="label">Style Selection: {{ style !== undefined ? presets[style].label : "NONE" }}</label>
-        <div class="stylegrid">
-          <figure v-for="(value, key) in styles" class="image is-96x96">
-            <img :class="{ 'selected': style === key }" @click="style = key" :title="value.label" :src="value.icon">
-          </figure>
+        <div class="field"> <!-- TODO: action buttons -->
+          <label class="label">Preview</label>
+          <div class="buttons has-addons">
+            <button class="button is-medium is-warning" @click="capture">Capture</button>
+            <button class="button is-medium is-danger" @click="snapped = false">Reset</button>
+            <button class="button is-medium is-info" @click="hallucinate">Diffusion</button>
+          </div>
         </div>
       </div>
-    </div>
-
-  </div>
-
-  <div class="images">
-
-    <div class="capture container framed">
-      <!-- preview image from webcam -->
-      <video autoplay="true" ref="preview" :hidden="snapped"></video>
-      <!-- captured image -->
-      <img src="/assets/transparent.png" ref="snapshot">
-    </div>
-
-    <div class="diffusion container">
-      <div class="container framed">
-        <!-- hallucinated image -->
-        <img src="/assets/transparent.png" ref="diffusion">
+  
+      <!-- style presets -->
+      <div id="styleselection">
+        <div class="field">
+          <label class="label">Style Selection: {{ style !== undefined ? presets[style].label : "NONE" }}</label>
+          <div id="stylegrid">
+            <figure v-for="(value, key) in styles" class="image">
+              <img :class="{ 'selected': style === key }" @click="style = key" :title="value.label" :src="value.icon">
+            </figure>
+          </div>
+        </div>
       </div>
+  
+      <!-- camera preview -->
+      <div id="cameraimg" class="images">
+        <div class="container framed">
+          <!-- video stream from webcam -->
+          <video autoplay="true" ref="preview" :hidden="snapped"></video>
+          <!-- captured image -->
+          <img src="/assets/transparent.png" ref="snapshot">
+        </div>
+      </div>
+
     </div>
-    <div class="diffusion">
-      <div class="controlnets">
+
+
+    <div id="rightlane">
+
+      <!-- controlnet previews -->
+      <div id="controlnets" class="images">
         <!-- three small for controlnet display -->
-        <img class="framed" src="/assets/controlnet/pose.png"  ref="ctlpose">
-        <img class="framed" src="/assets/controlnet/depth.png" ref="ctldepth">
-        <img class="framed" src="/assets/controlnet/edges.png" ref="ctledges">
+        <img class="framed" src="/assets/controlnet/pose.png"  ref="ctlpose"  title="pose detection">
+        <img class="framed" src="/assets/controlnet/depth.png" ref="ctldepth" title="depth map">
+        <img class="framed" src="/assets/controlnet/edges.png" ref="ctledges" title="soft edges">
       </div>
+
+      <!-- diffusion image -->
+      <div id="diffusionimg" class="images">
+        <div class="container framed">
+          <!-- hallucinated image -->
+          <img src="/assets/transparent.png" ref="diffusion">
+        </div>
+      </div>
+
     </div>
+
 
   </div>
 
@@ -170,11 +180,37 @@ async function hallucinate() {
 
 #pageroot {
   display: grid;
-  grid-template-columns: 400px 1fr;
+  grid-template-columns: 3fr 700px;
   grid-template-rows: auto;
+  /* grid-template-areas:
+    "title     title      diffusion"
+    "character camera     diffusion"
+    "styles camera controlnets" */
   grid-template-areas:
-    "title     title"
-    "character styles";
+    "title    rightlane"
+    "leftside rightlane"
+    "leftside rightlane";
+}
+
+#leftside {
+  grid-area: leftside;
+  display: grid;
+  grid-template-columns: 400px auto;
+  grid-template-areas:
+    "character ."
+    "styles camera";
+}
+
+#rightlane {
+  grid-area: rightlane;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: 1fr 3fr;
+  align-items: center;
+  justify-items: auto;
+  /* grid-template-areas:
+    "diffusion"
+    "controlnets"; */
 }
 
 #glitchytitle {
@@ -183,29 +219,43 @@ async function hallucinate() {
 
 #characterselection {
   grid-area: character;
+  justify-self: start;
+}
+#characterselection button {
+  width: 8rem;
+  font-weight: bold;
 }
 
 #styleselection {
   grid-area: styles;
 }
 
-.images {
-  position: absolute;
-  display: grid;
-  grid-template-columns: 3fr 3fr 1fr;
-  bottom: 1rem;
-  width: 100%;
+#cameraimg {
+  grid-area: camera;
 }
-.images .framed {
+
+#diffusionimg, #cameraimg {
+  align-self: end;
+}
+
+#controlnets {
+  /* grid-area: controlnets; */
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  justify-items: center;
+}
+#controlnets img {
+  height: 200px;
+}
+
+.framed {
   background-color: rgb(104, 104, 104);
   border-radius: 1rem;
-  border: solid 0.3rem white;
-  aspect-ratio: 1/1;
-  /* margin: 0 auto; */
-  /* display: block; */
+  border: solid 0.15rem white;
   overflow: hidden;
+  aspect-ratio: 1/1;
 }
-.images .container {
+#cameraimg .container {
   height: 512px;
   width: 512px;
 }
@@ -215,64 +265,39 @@ async function hallucinate() {
   object-fit: cover;
 }
 
-.images img {
-  /* display: block; */
+.images .framed {
   transition: all ease 0.2s;
 }
 
-.images img:hover {
+.images .framed:hover {
   scale: 1.03;
 }
 
-.images .framed img:hover {
+#cameraimg .framed:hover {
   border-color: red;
 }
 
-.images .diffusion img:hover {
-  border-color: yellow;
-}
 
-.diffusion {
+#stylegrid {
   display: grid;
-  grid-template-columns: 3fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
 }
-.controlnets img {
-  margin: 5px auto;
+#stylegrid figure {
+  width: 120px;
+  padding: 0.5rem;
 }
-
-
-.controlnets {
-  display: grid;
-  grid-template-columns: 1fr;
-}
-
-.stylegrid {
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr;
-}
-.stylegrid figure {
-  padding: 0.4rem;
-}
-.stylegrid img {
-  /* margin: 0.2rem; */
+#stylegrid img {
   border-radius: 0.7rem;
-  border: solid 0.2rem black;
+  border: solid 0.4rem black;
   aspect-ratio: 1/1;
-  transition: 0.2s ease;
+  transition: 0.15s ease;
 }
-.stylegrid img.selected {
-  border-color: white;
+#stylegrid img:hover {
+  scale: 1.1;
+}
+#stylegrid img.selected {
+  border-color: greenyellow;
   scale: 1.2;
 }
-
-.controlnets > img {
-  height: 155px;
-}
-
-.buttons.has-addons button {
-  width: 7rem;
-  font-weight: bold;
-}
-
 
 </style>

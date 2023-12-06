@@ -185,12 +185,12 @@ export type Preset = {
 
 export const presets = {
 
-  free: { // hallucinate freely with no style constraints
-    icon: "/assets/style/free.png",
-    label: "Freely Hallucinate",
-    func: (image, gender, age) => dif(image, "dreamshaper8Pruned.hz5Q.safetensors", 0.6, 0.5, 0.2,
-      chars.homosapiens(gender, age)),
-  } as Preset,
+  // free: { // hallucinate freely with no style constraints
+  //   icon: "/assets/style/free.png",
+  //   label: "Freely Hallucinate",
+  //   func: (image, gender, age) => dif(image, "dreamshaper8Pruned.hz5Q.safetensors", 0.6, 0.5, 0.2,
+  //     chars.homosapiens(gender, age)),
+  // } as Preset,
 
   clay: { // clay or plastic figures
     icon: "/assets/style/clay.png",
@@ -206,12 +206,12 @@ export const presets = {
       `stylized cartoon, illustration, portrait of ${chars.healthyboy(gender, age)} and an animal, looking sideways, forest in the background <lora:gotchaV001.Yu4Z:0.4>`),
   } as Preset,
 
-  impasto: { // impasto oil painting
-    icon: "/assets/style/impasto.png",
-    label: "Impasto Painting",
-    func: (image, gender, age) => dif(image, "dreamshaper8Pruned.hz5Q.safetensors", 0.6, 0.6, 0.3,
-      `((impasto)), intricate oil painting, thick textured paint, artistic, old holland classic colors, portrait of a ${chars.persons(gender, age)}, looking to the front`),
-  } as Preset,
+  // impasto: { // impasto oil painting
+  //   icon: "/assets/style/impasto.png",
+  //   label: "Impasto Painting",
+  //   func: (image, gender, age) => dif(image, "dreamshaper8Pruned.hz5Q.safetensors", 0.6, 0.6, 0.3,
+  //     `((impasto)), intricate oil painting, thick textured paint, artistic, old holland classic colors, portrait of a ${chars.persons(gender, age)}, looking to the front`),
+  // } as Preset,
 
   kids: { // delightful kids' illustration
     icon: "/assets/style/kids.png",
@@ -260,6 +260,13 @@ export const presets = {
     label: "Anime",
     func: (image, gender, age) => dif(image, "animepasteldreamSoft.lTTK.safetensors", 0.9, 1.0, 0.6,
       `anime illustration, movie still, ${chars.anime(gender, age)}, smiling and happy, looking sideways, bright sun, summer, small town in the background`),
+  } as Preset,
+
+  medieval: { // horrible medieval painting
+    icon: "/assets/style/impasto.png",
+    label: "Medieval Painting",
+    func: (image, gender, age) => dif(image, "dreamshaper8Pruned.hz5Q.safetensors", 0.4, 0.6, 0.2,
+      `bad mediaval painting, framed, textured paint, scene with a ${chars.persons(gender, age)}, stabbing king`),
   } as Preset,
 
   astronaut: { // photograph of an astronaut

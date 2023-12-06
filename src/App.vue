@@ -26,6 +26,7 @@ let age = ref<Ages>();
 // style preset selection
 let preset = ref<Presets>();
 
+// initialize once
 onMounted(async () => {
 
   // start the video stream
@@ -33,10 +34,16 @@ onMounted(async () => {
   stream.getVideoTracks()[0].applyConstraints({ aspectRatio: 1/1 }); // NOP on firefox
   preview.value!.srcObject = stream;
 
-  // automatically capture on load
-  // preview.value!.addEventListener("canplay", async () => {
-  //   await take_snapshot();
-  // }, { once: true });
+});
+
+// keybindings
+document.addEventListener("keydown", (ev) => {
+
+  // shift-S triggers capture/retake
+  if (ev.shiftKey && ev.key === "S") {
+    console.log("Capture/Retake hotkey (shift-S) pressed")
+    return image.value === null ? take_snapshot() : clear_snapshot();
+  };
 
 });
 

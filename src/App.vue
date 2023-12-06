@@ -47,9 +47,6 @@ document.addEventListener("keydown", (ev) => {
 
 });
 
-// whether to begin hallucination automatically
-const autohallucinate = false;
-
 // capture a still image from camera feed
 function take_snapshot() {
 
@@ -60,10 +57,7 @@ function take_snapshot() {
   }
 
   // refuse to update snapshot, if diffusion is running
-  if (diffusion_inflight.value === true) {
-    console.debug("diffusion running, won't capture new image");
-    return;
-  }
+  if (diffusion_inflight.value === true) return;
 
   // get the height from video for square
   let camera = preview.value!;
@@ -95,24 +89,28 @@ function take_snapshot() {
 
 // reset snapshot and enable live view for capture
 function clear_snapshot() {
+  if (diffusion_inflight.value === true) return;
   snapshot.value!.src = "/assets/transparent.png";
   image.value = null;
 }
 
 // select a gender via button
 function select_gender(value: Genders) {
+  if (diffusion_inflight.value === true) return;
   gender.value = value;
   hallucinate();
 }
 
 // select an age via button
 function select_age(value: Ages) {
+  if (diffusion_inflight.value === true) return;
   age.value = value;
   hallucinate();
 }
 
 // select a style from preview grid
 function select_preset(value: Presets) {
+  if (diffusion_inflight.value === true) return;
   preset.value = value;
   hallucinate();
 }
@@ -132,7 +130,7 @@ const diffusion_inflight = ref<boolean>(false);
 async function hallucinate() {
 
   // prevent multiple inflight
-  if (diffusion_inflight.value) {
+  if (diffusion_inflight.value === true) {
     console.warn("another request is already processing!");
     return;
   }
@@ -142,6 +140,9 @@ async function hallucinate() {
     console.warn("make a selection!");
     return;
   }
+
+  // mark request in-flight
+  diffusion_inflight.value = true;
 
   // start polling progress
   let poll = { timeout: 0 };
@@ -153,18 +154,9 @@ async function hallucinate() {
 
   try {
 
-    // mark request in-flight
-    diffusion_inflight.value = true;
-
     // capture is a data-uri, extract the base64 string
     let imgdata = image.value!.substring(22);
-    
-    // check if a preset is selected
-    if (preset.value === undefined) {
-      console.error("no style selected");
-      return;
-    }
-    
+
     // run the diffusion with character arguments
     let output = await presets[preset.value].func(imgdata, gender.value, age.value);
     
@@ -212,22 +204,48 @@ async function poll_progress() {
 
   <div id="pageroot">
 
-    <!-- glitchy title -->
-    <div id="glitchytitle">
-      <GlitchyTitle></GlitchyTitle>
+    <!-- title and controlnets -->
+    <div id="leftlane">
+
+      <!-- glitchy title -->
+      <div id="glitchytitle">
+        <GlitchyTitle></GlitchyTitle>
+      </div>
+
+      <!-- controlnet previews -->
+      <div id="controlnets" class="images">
+        <!-- three small for controlnet display -->
+        <div class="container framed">
+          <img src="/assets/controlnet/pose.png"  ref="ctlpose">
+          <div class="overlay"><span>pose detection</span></div>
+        </div>
+        <div class="container framed">
+          <img src="/assets/controlnet/depth.png" ref="ctldepth">
+          <div class="overlay"><span>depth map</span></div>
+        </div>
+        <div class="container framed">
+          <img src="/assets/controlnet/edges.png" ref="ctledges"><!-- <div id="leftside"> -->
+          <div class="overlay"><span>soft edges</span></div>
+        </div>
+      </div>
+
     </div>
 
-    <div id="leftside">
+    <!-- center lane with selection controls -->
+    <div id="midlane">
 
       <!-- picture capture controls -->
       <div id="capturecontrol">
         <div class="field">
-          <label class="label">1. Capture Snapshot</label>
+          <label class="label">
+            1. Capture Snapshot<br>
+            <span style="font-size: smaller;">Or use the foot pedal!</span>
+          </label>
           <div class="buttons has-addons">
-            <button class="button is-medium is-success" @click="take_snapshot"  v-if="image === null">Capture!</button>
-            <button class="button is-medium is-warning" @click="clear_snapshot" v-if="image !== null">Retake</button>
+            <button class="button is-medium is-success" @click="take_snapshot"  v-if="image === null" :disabled="diffusion_inflight">Capture!</button>
+            <button class="button is-medium is-warning" @click="clear_snapshot" v-if="image !== null" :disabled="diffusion_inflight">Retake</button>
             <!-- <button class="button is-medium is-info" @click="hallucinate">Diffusion</button> -->
-            <button class="button is-medium is-danger" @click="clear_all">Clear All</button>
+            <button class="button is-medium is-danger" @click="clear_all" :disabled="diffusion_inflight">Reset</button>
           </div>
         </div>
       </div>
@@ -239,10 +257,10 @@ async function poll_progress() {
             2. Choose your Character
           </label>
           <div class="buttons has-addons">
-            <button v-for="key in ages" :class="{ 'is-info': age == key }" class="button is-medium" @click="select_age(key)">{{ key }}</button>
+            <button v-for="key in ages" :class="{ 'is-info': age == key }" class="button is-medium" @click="select_age(key)" :disabled="diffusion_inflight">{{ key }}</button>
           </div>
           <div class="buttons has-addons">
-            <button v-for="key in genders" :class="{ 'is-info': gender == key }" class="button is-medium" @click="select_gender(key)">{{ key }}</button>
+            <button v-for="key in genders" :class="{ 'is-info': gender == key }" class="button is-medium" @click="select_gender(key)" :disabled="diffusion_inflight">{{ key }}</button>
           </div>
         </div>
       </div>
@@ -263,65 +281,77 @@ async function poll_progress() {
           </div>
         </div>
       </div>
-  
-      <!-- camera preview -->
-      <div id="cameraimg" class="images">
-        <div class="container framed">
-          <!-- video stream from webcam -->
-          <video autoplay="true" ref="preview"></video>
-          <!-- captured image -->
-          <img src="/assets/transparent.png" ref="snapshot">
-          <div class="overlay do-clear" @click="clear_snapshot" v-if="image !== null">
-            <span>clear snapshot</span>
-          </div>
-          <div class="overlay do-snapshot" @click="take_snapshot" v-if="image === null">
-            <span>take snapshot</span>
-          </div>
-        </div>
-      </div>
 
     </div>
 
-
+    <!-- qr code to take home -->
     <div id="rightlane">
 
-      <!-- controlnet previews -->
-      <div id="controlnets" class="images">
-        <!-- three small for controlnet display -->
-        <div class="container framed">
-          <img src="/assets/controlnet/pose.png"  ref="ctlpose">
-          <div class="overlay"><span>pose detection</span></div>
-        </div>
-        <div class="container framed">
-          <img src="/assets/controlnet/depth.png" ref="ctldepth">
-          <div class="overlay"><span>depth map</span></div>
-        </div>
-        <div class="container framed">
-          <img src="/assets/controlnet/edges.png" ref="ctledges">
-          <div class="overlay"><span>soft edges</span></div>
-        </div>
-      </div>
-
-      <!-- diffusion image -->
-      <div id="diffusionimg" class="images">
-        <progress class="progress is-small is-success" max="1" style="margin-bottom: 0.8rem;" ref="progressbar" v-show="diffusion_inflight">diffusion</progress>
-        <div class="container framed">
-          <!-- hallucinated image -->
-          <img src="/assets/transparent.png" ref="diffusion">
-          <div class="overlay">
-            <span>TODO: QR code</span>
-          </div>
-        </div>
-      </div>
+      TODO: "4. Take it Home / QR"
 
     </div>
 
+    <!-- camera preview -->
+    <div id="cameraimg" class="images">
+      <div class="container framed">
+        <!-- video stream from webcam -->
+        <video autoplay="true" ref="preview"></video>
+        <!-- captured image -->
+        <img src="/assets/transparent.png" ref="snapshot">
+      </div>
+    </div>
 
+    <!-- diffusion image -->
+    <div id="diffusionimg" class="images">
+      <div class="container framed">
+        <progress class="progress is-small is-info" max="1" ref="progressbar" v-show="diffusion_inflight"></progress>
+        <!-- hallucinated image -->
+        <img src="/assets/transparent.png" ref="diffusion">
+        <div class="overlay">
+          <span>TODO: QR code</span>
+        </div>
+      </div>
+    </div>
+    
   </div>
-
+  
 </template>
 
 <style scoped>
+
+/* --------- OVERALL GRID LAYOUT --------- */
+
+#pageroot {
+  display: grid;
+  column-gap: 2rem;
+  grid-template-columns: 1fr 23rem 1fr;
+  grid-template-rows: auto;
+  grid-template-areas:
+    "leftlane  midlane  rightlane"
+    "camera    midlane  diffusion";
+}
+#leftlane { grid-area: leftlane; }
+#rightlane { grid-area: rightlane; }
+#midlane { grid-area: midlane; }
+#cameraimg { grid-area: camera; }
+#diffusionimg { grid-area: diffusion; }
+
+#leftlane, #rightlane {
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: center;
+  justify-items: auto;
+}
+
+#midlane {
+  align-content: space-between;
+  /* align-self: end; */
+  display: grid;
+  grid-template-columns: 1fr;
+  row-gap: 2rem;
+}
+
+/* --------- OVERLAY STYLING --------- */
 
 .overlay, #cameraimg img {
   position: absolute;
@@ -361,89 +391,38 @@ async function poll_progress() {
   cursor: default;
 }
 
-#pageroot {
-  display: grid;
-  grid-template-columns: 3fr 700px;
-  grid-template-rows: auto;
-  /* grid-template-areas:
-    "title     title      diffusion"
-    "character camera     diffusion"
-    "styles camera controlnets" */
-  grid-template-areas:
-    "title    rightlane"
-    "leftside rightlane"
-    "leftside rightlane";
-}
-
-#leftside {
-  grid-area: leftside;
-  display: grid;
-  grid-template-columns: auto 450px;
-  grid-template-areas:
-    "readme character"
-    "capture styles"
-    "camera  styles";
-}
-
-#rightlane {
-  grid-area: rightlane;
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: 1fr 3.1fr;
-  align-items: center;
-  justify-items: auto;
-  /* grid-template-areas:
-    "diffusion"
-    "controlnets"; */
-}
-
 .label {
   font-size: 1.4rem;
 }
 
-#capturecontrol {
-  grid-area: capture;
-  justify-self: center;
-  align-self: end;
-}
-
-#glitchytitle {
-  grid-area: title;
-}
-
-#characterselection {
-  grid-area: character;
-  justify-self: start;
-}
 #characterselection button {
-  width: 8rem;
+  width: 7.5rem;
   font-weight: bold;
-}
-
-#styleselection {
-  grid-area: styles;
-  align-self: center;
-}
-
-#cameraimg {
-  grid-area: camera;
 }
 
 #diffusionimg, #cameraimg {
   align-self: end;
 }
 
+#diffusionimg img, #cameraimg video, #cameraimg img {
+  transform: scaleX(-1);
+}
+
+progress {
+  position: absolute;
+  scale: 1.05;
+}
+
 #controlnets {
-  /* grid-area: controlnets; */
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   justify-items: center;
 }
 #controlnets img {
-  height: 200px;
+  height: 180px;
 }
 #controlnets .framed {
-  border: none;
+  border: 0.2rem solid white;
 }
 
 .framed {
@@ -453,23 +432,17 @@ async function poll_progress() {
   overflow: hidden;
   aspect-ratio: 1/1;
 }
-#cameraimg .container {
-  height: 512px;
-  width: 512px;
-}
 
 .images video, .images img {
   height: 100%;
   object-fit: cover;
 }
 
-.images .framed {
-  transition: all ease 0.2s;
+#glitchytitle {
+  padding-bottom: 1rem;
 }
 
-.images .framed:hover {
-  scale: 1.03;
-}
+/* --------- STYLE SELECTION TILES --------- */
 
 #stylegrid {
   display: grid;
@@ -477,40 +450,33 @@ async function poll_progress() {
 }
 #stylegrid figure {
   width: 120px;
-  padding: 0.5rem;
+  padding: 0.6rem;
   cursor: pointer;
 }
 #stylegrid img {
-  border-radius: 0.7rem;
-  border: none;
-  aspect-ratio: 1/1;
+  border-radius: 0.5rem;
   transition: 0.2s ease;
 }
-#stylegrid img:hover {
+#stylegrid figure:hover, #stylegrid .selected {
   scale: 1.1;
+  transition: 0.2s ease;
 }
 #stylegrid .selected img {
-  border: solid 0.3rem white;
+  outline: solid 0.3rem white;
 }
-#stylegrid figure:not(.selected) {
+#stylegrid figure:not(.selected):not(:hover) {
   opacity: 0.6;
-}
-#stylegrid figure:hover {
-  opacity: 1.0;
-}
-#stylegrid .selected {
-  transition: 0.2s ease;
-  scale: 1.2;
 }
 #stylegrid .overlay {
   height: calc(100% - 1rem);
   width: calc(100% - 1rem);
-  border-radius: 0.7rem;
+  border-radius: 0.5rem;
   margin: 0.5rem;
 }
 #stylegrid .overlay span {
   font-size: 1.2rem;
   cursor: pointer;
 }
+
 
 </style>

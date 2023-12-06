@@ -241,11 +241,11 @@ async function poll_progress() {
             1. Capture Snapshot<br>
             <span style="font-size: smaller;">Or use the foot pedal!</span>
           </label>
-          <div class="buttons has-addons">
+          <div class="buttons">
+            <button class="button is-medium is-danger" @click="clear_all" :disabled="(image == null && age == undefined && gender == undefined && preset == undefined)">Reset</button>
             <button class="button is-medium is-success" @click="take_snapshot"  v-if="image === null" :disabled="diffusion_inflight">Capture!</button>
             <button class="button is-medium is-warning" @click="clear_snapshot" v-if="image !== null" :disabled="diffusion_inflight">Retake</button>
-            <!-- <button class="button is-medium is-info" @click="hallucinate">Diffusion</button> -->
-            <button class="button is-medium is-danger" @click="clear_all" :disabled="diffusion_inflight">Reset</button>
+            <!-- <button class="button is-medium is-info" @click="hallucinate" :disabled="diffusion_inflight || image == null || age == undefined || gender == undefined || preset == undefined">Diffusion</button> -->
           </div>
         </div>
       </div>
@@ -291,12 +291,10 @@ async function poll_progress() {
 
     </div>
 
-    <!-- camera preview -->
+    <!-- video camera preview -->
     <div id="cameraimg" class="images">
       <div class="container framed">
-        <!-- video stream from webcam -->
         <video autoplay="true" ref="preview"></video>
-        <!-- captured image -->
         <img src="/assets/transparent.png" ref="snapshot">
       </div>
     </div>
@@ -304,12 +302,8 @@ async function poll_progress() {
     <!-- diffusion image -->
     <div id="diffusionimg" class="images">
       <div class="container framed">
-        <progress class="progress is-small is-info" max="1" ref="progressbar" v-show="diffusion_inflight"></progress>
-        <!-- hallucinated image -->
         <img src="/assets/transparent.png" ref="diffusion">
-        <div class="overlay">
-          <span>TODO: QR code</span>
-        </div>
+        <progress class="progress is-small is-info" max="1" ref="progressbar" v-show="diffusion_inflight"></progress>
       </div>
     </div>
     
@@ -324,6 +318,8 @@ async function poll_progress() {
 #pageroot {
   display: grid;
   column-gap: 2rem;
+  align-content: space-between;
+  justify-content: space-between;
   grid-template-columns: 1fr 23rem 1fr;
   grid-template-rows: auto;
   grid-template-areas:
@@ -343,6 +339,10 @@ async function poll_progress() {
   justify-items: auto;
 }
 
+#cameraimg, #diffusionimg {
+  align-self: end;
+}
+
 #midlane {
   align-content: space-between;
   /* align-self: end; */
@@ -351,35 +351,25 @@ async function poll_progress() {
   row-gap: 2rem;
 }
 
+#glitchytitle {
+  padding-bottom: 1rem;
+}
+
+
 /* --------- OVERLAY STYLING --------- */
 
 .overlay, #cameraimg img {
   position: absolute;
-  top: 0;
-  bottom: 0;
-  left: 0;
-  right: 0;
+  top: 0; bottom: 0;
+  left: 0; right: 0;
   height: 100%;
   width: 100%;
 }
 .overlay {
   opacity: 0.0;
-  transition: .3s ease;
+  transition: .2s ease;
   background-color: #fff9;
 }
-
-.overlay.do-clear {
-  background-color: hsla(0, 90%, 60%, 0.4);
-}
-.overlay.do-capture {
-  background-color: hsla(220, 90%, 60%, 0.4);
-}
-
-
-.container:hover .overlay {
-  opacity: 1.0;
-}
-
 .overlay > span {
   color: black;
   font-size: 2rem;
@@ -390,6 +380,12 @@ async function poll_progress() {
   text-align: center;
   cursor: default;
 }
+.container:hover .overlay {
+  opacity: 1.0;
+}
+
+
+/* --------- ??? --------- */
 
 .label {
   font-size: 1.4rem;
@@ -400,30 +396,34 @@ async function poll_progress() {
   font-weight: bold;
 }
 
-#diffusionimg, #cameraimg {
-  align-self: end;
-}
-
-#diffusionimg img, #cameraimg video, #cameraimg img {
+#diffusionimg img,
+#cameraimg video,
+#cameraimg img,
+#controlnets img {
   transform: scaleX(-1);
 }
 
 progress {
+  top: 0;
   position: absolute;
   scale: 1.05;
 }
+
+
+/* --------- CONTROLNET IMAGES --------- */
 
 #controlnets {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   justify-items: center;
+  column-gap: 1rem;
 }
+
 #controlnets img {
   height: 180px;
 }
-#controlnets .framed {
-  border: 0.2rem solid white;
-}
+
+/* --------- FIT IMAGES IN FRAMES --------- */
 
 .framed {
   background-color: rgb(104, 104, 104);
@@ -432,15 +432,15 @@ progress {
   overflow: hidden;
   aspect-ratio: 1/1;
 }
+#controlnets .framed {
+  border: solid 0.2rem white;
+}
 
 .images video, .images img {
   height: 100%;
   object-fit: cover;
 }
 
-#glitchytitle {
-  padding-bottom: 1rem;
-}
 
 /* --------- STYLE SELECTION TILES --------- */
 

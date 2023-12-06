@@ -44,7 +44,7 @@ onMounted(async () => {
 });
 
 // capture a still image from camera feed
-async function take_snapshot() {
+function take_snapshot() {
 
   // get the height from video for square
   let camera = preview.value!;
@@ -80,10 +80,17 @@ const diffusion_inflight = ref<boolean>(false);
 
 // send capture to stable-diffusion for transformation
 async function hallucinate() {
+
+  // prevent multiple inflight
   if (diffusion_inflight.value) {
     console.warn("another request is already processing!");
     return;
   }
+
+  // take snapshot if none taken
+  if (image.value === null) {
+    take_snapshot();
+  };
 
   // start polling progress
   let poll = { timeout: 0 };
@@ -99,7 +106,7 @@ async function hallucinate() {
     diffusion_inflight.value = true;
 
     // capture is a data-uri, extract the base64 string
-    let imgdata = snapshot.value!.src.substring(22);
+    let imgdata = image.value!.substring(22);
     
     // check if a preset is selected
     if (style.value === undefined) {
@@ -172,14 +179,14 @@ async function poll_progress() {
             <button v-for="key in genders" :class="{ 'is-link': gender == key }" class="button is-medium" @click="gender = key">{{ key }}</button>
           </div>
         </div>
-        <div class="field"> <!-- TODO: action buttons -->
+        <!-- <div class="field">
           <label class="label">Preview</label>
           <div class="buttons has-addons">
             <button class="button is-medium is-warning" @click="take_snapshot">Capture</button>
             <button class="button is-medium is-danger" @click="clear_snapshot">Reset</button>
             <button class="button is-medium is-info" @click="hallucinate">Diffusion</button>
           </div>
-        </div>
+        </div> -->
       </div>
   
       <!-- style presets -->
@@ -326,6 +333,10 @@ async function poll_progress() {
     "controlnets"; */
 }
 
+.label {
+  font-size: 1.4rem;
+}
+
 #glitchytitle {
   grid-area: title;
 }
@@ -341,6 +352,7 @@ async function poll_progress() {
 
 #styleselection {
   grid-area: styles;
+  align-self: center;
 }
 
 #cameraimg {

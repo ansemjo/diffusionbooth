@@ -219,24 +219,6 @@ async function poll_progress() {
 
     <div id="leftside">
 
-      <!-- README -->
-      <div id="readme">
-        Bla bla bla, Mr. Freeman.
-      </div>
-      
-      <!-- character selection buttons -->
-      <div id="characterselection">
-        <div class="field"> <!-- character traits -->
-          <label class="label">2. Choose your Character</label>
-          <div class="buttons has-addons">
-            <button v-for="key in ages" :class="{ 'is-success': age == key }" class="button is-medium" @click="select_age(key)">{{ key }}</button>
-          </div>
-          <div class="buttons has-addons">
-            <button v-for="key in genders" :class="{ 'is-link': gender == key }" class="button is-medium" @click="select_gender(key)">{{ key }}</button>
-          </div>
-        </div>
-      </div>
-
       <!-- picture capture controls -->
       <div id="capturecontrol">
         <div class="field">
@@ -249,11 +231,28 @@ async function poll_progress() {
           </div>
         </div>
       </div>
+
+      <!-- character selection buttons -->
+      <div id="characterselection">
+        <div class="field"> <!-- character traits -->
+          <label class="label" :class="{ 'has-text-danger': age === undefined || gender === undefined }">
+            2. Choose your Character
+          </label>
+          <div class="buttons has-addons">
+            <button v-for="key in ages" :class="{ 'is-success': age == key }" class="button is-medium" @click="select_age(key)">{{ key }}</button>
+          </div>
+          <div class="buttons has-addons">
+            <button v-for="key in genders" :class="{ 'is-link': gender == key }" class="button is-medium" @click="select_gender(key)">{{ key }}</button>
+          </div>
+        </div>
+      </div>
   
       <!-- style presets -->
       <div id="styleselection">
         <div class="field">
-          <label class="label">3. Select a Style: {{ preset !== undefined ? presets[preset].label : "NONE" }}</label>
+          <label class="label" :class="{ 'has-text-danger': preset === undefined }">
+            3. Select Style: {{ preset !== undefined ? presets[preset].label : "NONE" }}
+          </label>
           <div id="stylegrid">
             <figure v-for="(value, key) in presets" class="image">
               <img :class="{ 'selected': preset === key }" @click="select_preset(key)" :title="value.label" :src="value.icon">
@@ -306,8 +305,8 @@ async function poll_progress() {
         <div class="container framed">
           <!-- hallucinated image -->
           <img src="/assets/transparent.png" ref="diffusion">
-          <div class="overlay" @click="hallucinate" v-if="!diffusion_inflight">
-            <span>run diffusion (again)!</span>
+          <div class="overlay">
+            <span>TODO: QR code</span>
           </div>
         </div>
       </div>
@@ -439,6 +438,9 @@ async function poll_progress() {
 }
 #controlnets img {
   height: 200px;
+}
+#controlnets .framed {
+  border: none;
 }
 
 .framed {

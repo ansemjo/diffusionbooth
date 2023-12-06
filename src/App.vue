@@ -84,6 +84,15 @@ async function hallucinate() {
     console.warn("another request is already processing!");
     return;
   }
+
+  // start polling progress
+  let poll = { timeout: 0 };
+  (async () => {
+    progress.value = 0.0;
+    await poll_progress();
+    poll_rearm(poll);
+  })();
+
   try {
 
     // mark request in-flight
@@ -109,8 +118,34 @@ async function hallucinate() {
 
   } finally {
     diffusion_inflight.value = false;
+    clearTimeout(poll.timeout);
+    progress.value = 0.0;
   }
 
+}
+
+function poll_rearm(poll: { timeout: number }) {
+  if (diffusion_inflight.value === false) return;
+  poll.timeout = setTimeout(async () => {
+    await poll_progress();
+    poll_rearm(poll);
+  }, 100);
+};
+
+
+const progressbar = ref<HTMLProgressElement>();
+const progress = ref<number>(0.0);
+async function poll_progress() {
+  let request = await fetch("/sdapi/v1/progress?skip_current_image=true", { headers: { "accept": "application/json" } });
+  let prg = (await request.json()).progress;
+  if (typeof prg === "number") {
+    console.log("progress:", prg);
+    if (prg > 0.1) {
+      progressbar.value!.value = prg;
+    } else {
+      progressbar.value!.removeAttribute("value");
+    }
+  };
 }
 
 </script>
@@ -192,13 +227,14 @@ async function hallucinate() {
           <div class="overlay"><span>depth map</span></div>
         </div>
         <div class="container framed">
-          <img class="framed" src="/assets/controlnet/edges.png" ref="ctledges">
+          <img src="/assets/controlnet/edges.png" ref="ctledges">
           <div class="overlay"><span>soft edges</span></div>
         </div>
       </div>
 
       <!-- diffusion image -->
       <div id="diffusionimg" class="images">
+        <progress class="progress is-small is-success" max="1" style="margin-bottom: 0.8rem;" ref="progressbar" v-show="diffusion_inflight">diffusion</progress>
         <div class="container framed">
           <!-- hallucinated image -->
           <img src="/assets/transparent.png" ref="diffusion">
@@ -282,7 +318,7 @@ async function hallucinate() {
   grid-area: rightlane;
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: 1fr 3fr;
+  grid-template-rows: 1fr 3.1fr;
   align-items: center;
   justify-items: auto;
   /* grid-template-areas:

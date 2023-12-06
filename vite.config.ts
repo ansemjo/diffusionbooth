@@ -14,7 +14,7 @@ export default defineConfig({
   server: {
     proxy: {
       // forward requests to the stable-diffusion-webui
-      "/sdapi": "http://localhost:7860",
+      "/sdapi": "http://dosgpu:7860",
     },
   },
 });

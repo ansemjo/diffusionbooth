@@ -35,4 +35,9 @@ def upload_file():
 def download(name):
     return send_from_directory(args.destination, name)
 
+@app.route(args.prefix + "/random")
+def randomimage():
+    files = list(map(lambda f: f.name, filter(lambda e: e.is_file(), os.scandir(args.destination))))
+    return send_from_directory(args.destination, random.SystemRandom().choice(files))
+
 app.run(port=8000)

@@ -63,15 +63,16 @@ function take_snapshot() {
   let camera = preview.value!;
   let height = camera.videoHeight;
   let left = (camera.videoWidth - height)/2;
-  console.log("Video", camera, "is", camera.videoHeight, camera.videoWidth);
-  console.log("Crop:", left, height);
 
   // create a new canvas for drawing
   let canvas = document.createElement("canvas");
   canvas.width = canvas.height = height;
 
   // draw inner square to canvas
-  canvas.getContext("2d")!.drawImage(camera,
+  let ctx = canvas.getContext("2d")!;
+  ctx.translate(canvas.width, 0);
+  ctx.scale(-1, 1);
+  ctx.drawImage(camera,
     left, 0, height, height,
        0, 0, height, height,
   );
@@ -415,10 +416,7 @@ async function upload() {
   font-weight: bold;
 }
 
-#diffusionimg img,
-#cameraimg video,
-#cameraimg img,
-#controlnets img {
+#cameraimg video {
   transform: scaleX(-1);
 }
 

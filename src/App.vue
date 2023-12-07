@@ -172,6 +172,8 @@ async function hallucinate() {
     progress.value = 0.0;
   }
 
+  // upload();
+
 }
 
 function poll_rearm(poll: { timeout: number }) {
@@ -196,6 +198,22 @@ async function poll_progress() {
       progressbar.value!.removeAttribute("value");
     }
   };
+}
+
+// upload the file to fileserver.py
+async function upload() {
+
+  // create the data form
+  let form = new FormData();
+  let blob = await (await fetch(diffusion.value!.src)).blob();
+  form.append("file", blob);
+
+  // post the file
+  await fetch("https://basecamp.informatik.uni-hamburg.de/diffusion", {
+    method: "POST",
+    body: form,
+  });
+
 }
 
 </script>
@@ -246,6 +264,7 @@ async function poll_progress() {
             <button class="button is-medium is-success" @click="take_snapshot"  v-if="image === null" :disabled="diffusion_inflight">Capture!</button>
             <button class="button is-medium is-warning" @click="clear_snapshot" v-if="image !== null" :disabled="diffusion_inflight">Retake</button>
             <!-- <button class="button is-medium is-info" @click="hallucinate" :disabled="diffusion_inflight || image == null || age == undefined || gender == undefined || preset == undefined">Diffusion</button> -->
+            <button class="button is-medium is-info" @click="upload" v-if="image !== null">Upload</button>
           </div>
         </div>
       </div>

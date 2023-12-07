@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diffusion Booth Gallery</title>
+    <style>
+
+      html, body {
+        background: black;
+        height: 100%;
+        margin: 0;
+        overflow: hidden;
+      }
+
+      .diffusion {
+        position: relative;
+        height: 100%;
+        margin: 0 auto;
+        display: block;
+      }
+
+      .diffusion#fg {
+        border: 4px solid black;
+        border-top: none;
+        border-bottom: none;
+      }
+
+      .diffusion#bg {
+        position: absolute;
+        align-self: center;
+        width: 100%;
+        /* height: auto; */ /* maintain ratio and scale or just stretch? */
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        filter: blur(16px);
+      }
+
+    </style>
+  </head>
+  <body>
+    <img class="diffusion" id="bg" src="./20231207093013-ZHe3o72GMrCF.png">
+    <img class="diffusion" id="fg" src="./20231207093013-ZHe3o72GMrCF.png">
+    <script>
+
+      // endpoint to get random images
+      const url = "./random.png";
+
+      // get reference to img element
+      const diffusion = document.getElementById("fg");
+
+      // update the image with a new random one
+      function update() {
+        diffusion.src = `${url}?t=${new Date().toISOString()}`;
+      }
+
+      // setInterval(update, 2000);
+
+    </script>
+  </body>
+</html>

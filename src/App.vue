@@ -218,7 +218,7 @@ async function upload() {
   form.append("file", blob);
 
   // post the file
-  let up = await fetch("https://basecamp.informatik.uni-hamburg.de/diffusion", {
+  let up = await fetch("https://basecamp.informatik.uni-hamburg.de/diffusion/", {
     method: "POST",
     body: form,
   });

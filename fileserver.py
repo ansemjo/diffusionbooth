@@ -1,16 +1,23 @@
-import os, argparse, uuid
-from flask import Flask, flash, request, redirect, url_for, send_from_directory
-from werkzeug.utils import secure_filename
+#!/usr/bin/env python3
+import os, argparse, string, random, datetime
+from flask import Flask, request, url_for, send_from_directory
 
 # commandline arguments
 parser = argparse.ArgumentParser()
 parser.add_argument("destination", help="path to store uploads in")
+parser.add_argument("-p", dest="prefix", help="path prefix in route", default="/diffusion")
+parser.add_argument("-H", dest="host", help="hostname in returned url", default="")
 args = parser.parse_args()
 
-app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = args.destination
+# generate randomized filename with date prefix
+def randnow(ext = "png", n = 12):
+    now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+    rand = ''.join(random.SystemRandom().choice(string.ascii_letters + string.digits) for _ in range(n))
+    return f"{now}-{rand}.{ext}"
 
-@app.route("/diffusion", methods=["POST"])
+app = Flask(__name__)
+
+@app.route(args.prefix, methods=["POST"])
 def upload_file():
     # check if file is present
     if "file" not in request.files:
@@ -20,12 +27,12 @@ def upload_file():
     if file.content_type != "image/png":
         return "file must be image/png", 400
     # generate random name and save
-    name = str(uuid.uuid4()) + ".png"
-    file.save(os.path.join(app.config["UPLOAD_FOLDER"], name))
-    return { "link": url_for("download", name=name) }
+    name = randnow()
+    file.save(os.path.join(args.destination, name))
+    return { "link": args.host + url_for("download", name=name) }
 
-@app.route("/diffusion/<name>")
+@app.route(args.prefix + "/<name>")
 def download(name):
-    return send_from_directory(app.config["UPLOAD_FOLDER"], name)
+    return send_from_directory(args.destination, name)
 
 app.run(port=8000)

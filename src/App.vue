@@ -212,6 +212,9 @@ async function upload() {
   // abort if there is no image
   if (diffusion.value === undefined) return;
 
+  // remove previous link
+  downlink.value = undefined;
+
   // create the data form
   let form = new FormData();
   let blob = await (await fetch(diffusion.value.src)).blob();

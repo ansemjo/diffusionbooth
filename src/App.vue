@@ -3,6 +3,7 @@ import { ref, onMounted } from "vue";
 import { presets, type Presets, type Preset } from "@/stablediffusion";
 import { ages, type Ages, genders, type Genders } from "@/characterselection"
 import GlitchyTitle from "@/GlitchyTitle.vue";
+import qrcode from "qrcode.vue";
 
 // video stream for camera capture
 let preview = ref<HTMLVideoElement>();
@@ -122,6 +123,7 @@ function clear_all() {
   age.value = undefined;
   preset.value = undefined;
   clear_snapshot();
+  downlink.value = undefined;
 }
 
 // is a diffusion currently in-flight?
@@ -173,7 +175,7 @@ async function hallucinate() {
     progress.value = 0.0;
   }
 
-  // upload();
+  upload();
 
 }
 
@@ -201,19 +203,29 @@ async function poll_progress() {
   };
 }
 
+// downloadlink for QR code
+let downlink = ref<string>();
+
 // upload the file to fileserver.py
 async function upload() {
 
+  // abort if there is no image
+  if (diffusion.value === undefined) return;
+
   // create the data form
   let form = new FormData();
-  let blob = await (await fetch(diffusion.value!.src)).blob();
+  let blob = await (await fetch(diffusion.value.src)).blob();
   form.append("file", blob);
 
   // post the file
-  await fetch("https://basecamp.informatik.uni-hamburg.de/diffusion", {
+  let up = await fetch("https://basecamp.informatik.uni-hamburg.de/diffusion", {
     method: "POST",
     body: form,
   });
+
+  // use the returned link
+  if (!up.ok) { return console.error(up); }
+  downlink.value = (await up.json()).link;
 
 }
 
@@ -265,7 +277,7 @@ async function upload() {
             <button class="button is-medium is-success" @click="take_snapshot"  v-if="image === null" :disabled="diffusion_inflight">Capture!</button>
             <button class="button is-medium is-warning" @click="clear_snapshot" v-if="image !== null" :disabled="diffusion_inflight">Retake</button>
             <!-- <button class="button is-medium is-info" @click="hallucinate" :disabled="diffusion_inflight || image == null || age == undefined || gender == undefined || preset == undefined">Diffusion</button> -->
-            <button class="button is-medium is-info" @click="upload" v-if="image !== null">Upload</button>
+            <!-- <button class="button is-medium is-info" @click="upload" v-if="image !== null">Upload</button> -->
           </div>
         </div>
       </div>
@@ -307,7 +319,16 @@ async function upload() {
     <!-- qr code to take home -->
     <div id="rightlane">
 
-      TODO: "4. Take it Home / QR"
+      <div id="takehome" v-if="downlink !== undefined">
+        <div class="field"> <!-- upload for QR code -->
+          <label class="label">
+            4. Take it Home!
+          </label>
+          <div class="qrcode">
+            <qrcode :value="downlink" :size="200" level="L"/>
+          </div>
+        </div>
+      </div>
 
     </div>
 
@@ -375,6 +396,11 @@ async function upload() {
   padding-bottom: 1rem;
 }
 
+#takehome {
+  justify-self: end;
+  padding-right: 2rem;
+}
+
 
 /* --------- OVERLAY STYLING --------- */
 
@@ -424,6 +450,13 @@ progress {
   top: 0;
   position: absolute;
   scale: 1.05;
+}
+
+.qrcode {
+  padding: 1rem;
+  background: hsl(0, 0%, 100%);
+  aspect-ratio: 1/1;
+  width: calc(200px + 2rem);
 }
 
 

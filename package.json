@@ -13,6 +13,7 @@
     "@types/w3c-image-capture": "^1.0.10",
     "bulma": "^0.9.4",
     "pinia": "^2.1.7",
+    "qrcode.vue": "^3.4.1",
     "vue": "^3.3.4"
   },
   "devDependencies": {

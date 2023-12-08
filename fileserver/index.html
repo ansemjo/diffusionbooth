@@ -47,15 +47,17 @@
       // endpoint to get random images
       const url = "./random.png";
 
-      // get reference to img element
-      const diffusion = document.getElementById("fg");
+      // get reference to img elements
+      const fg = document.getElementById("fg");
+      const bg = document.getElementById("bg");
 
       // update the image with a new random one
       function update() {
-        diffusion.src = `${url}?t=${new Date().toISOString()}`;
+        let refresh = `${url}?t=${new Date().toISOString()}`;
+        fg.src = bg.src = refresh;
       }
 
-      // setInterval(update, 2000);
+      setInterval(update, 10000);
 
     </script>
   </body>

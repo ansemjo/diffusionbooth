@@ -4,9 +4,7 @@
     Take a photo and let the AI create a fun and unique portrait of you!
 </p>
 <div align="center">
-    <video autoplay loop muted playsinline>
-        <source src="example.mp4" type="video/mp4">
-    </video>
+    <img src="example.gif" alt="a GIF with examples from the science night"/>
 </div>
 <p align="center">
     <a href="https://csti.haw-hamburg.de/2023/11/21/digital-science-night-5-generation-ai-ich-bin-doch-nur-ein-language-model/">This project was a two-week hack for the 2023 Digital Science Night</a><br>

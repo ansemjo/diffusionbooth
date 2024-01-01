@@ -26,7 +26,7 @@ You **must** enable the API with `--api` in the `COMMANDLINE_ARGS` variable. If 
 
 Then, the [ControlNets extension](https://github.com/Mikubill/sd-webui-controlnet.git) is required because control nets are an essential part of getting pictures with some resemblance at all. Open the Web UI and navigate to Extensions > "Install from URL".
 
-And finally, you need all the models of course. This part is WIP, until I find out how to host files in LFS without making my University's GitLab team angry. You can find models on [huggingface.co](https://huggingface.co/) and [civtai.com](https://civitai.com/); the names and hashes of all the models we used are noted in [`models_sha256sum`](./models_sha256sum).
+And finally, you need all the models of course. I don't want to make my University's GitLab team angry, so I won't put them into the repository. But you can find the models on [huggingface.co](https://huggingface.co/) and [civtai.com](https://civitai.com/); the names, direct download links and hashes of the necessary models are noted in [`models.md`](./models.md).
 
 You **should enable larger cache** for ControlNet models! Otherwise they need to be reloaded for every API call, which takes unecessarily long time. Go to [Settings > ControlNet (left) > increase "Model cache size"](https://github.com/Mikubill/sd-webui-controlnet/issues/429#issuecomment-1449200295).
 

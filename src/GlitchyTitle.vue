@@ -31,6 +31,10 @@ const randombooth = () => stablebooth[crypto.getRandomValues(new Uint32Array(1))
   {{ choice }}
   <span aria-hidden="true">{{ choice }}</span>
 </h1>
+<span class="sourcecode">
+  <img src="../public/assets/github-mark-white.svg">
+  github.com/ansemjo/diffusionbooth
+</span>
 
 </template>
 
@@ -49,6 +53,22 @@ const randombooth = () => stablebooth[crypto.getRandomValues(new Uint32Array(1))
   position: absolute;
   top: 0;
   left: 0;
+}
+
+.sourcecode {
+  color: white;
+  letter-spacing: 0.07rem;
+  margin-left: 0.5rem;
+}
+
+.sourcecode img {
+  height: 1rem;
+  top: 0.2rem;
+  position: relative;
+}
+
+h1.glitch {
+  margin-bottom: 0 !important;
 }
 
 .glitch span:first-child {
